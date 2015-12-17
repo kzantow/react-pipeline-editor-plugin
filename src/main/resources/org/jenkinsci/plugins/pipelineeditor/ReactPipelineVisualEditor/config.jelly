@@ -1,9 +1,9 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:block>
-    <st:adjunct includes="react-plugin-test"/>
+    <st:adjunct includes="react-pipeline-editor-plugin"/>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
-    <div class="react-plugin-test"></div>
+    <div class="react-pipeline-editor-plugin"></div>
     <input type="hidden" name="_.script" value="${instance.script}"/>
     <input type="hidden" name="_.pipelineModel" value="${instance.pipelineModel}"/>
   </f:block>  

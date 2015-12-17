@@ -31,6 +31,9 @@ var StageBlock = React.createClass({
 	toggleStageListing: function() {
 		this.setState({showStageListing: !this.state.showStageListing});
 	},
+	removeStage: function() {
+		wf.removeStage(this.props.workflow, this.props.state);
+	},
 	render: function() { return (
 	    <div className="panel panel-default stage-block">
 	        <div className="panel-heading">
@@ -40,7 +43,12 @@ var StageBlock = React.createClass({
 	            	}, function() {
 	            		return <i className="fa fa-caret-right"></i>;
 	            	})}
-	            	{this.props.stage.name}
+		    		<ui.ActionMenu>
+		    			{this.props.stage.name}
+		    			<ui.Actions>
+		    				<ui.Button onClick={this.removeStage}>Remove</ui.Button>
+	    				</ui.Actions>
+	    			</ui.ActionMenu>
             	</ui.Button>
 	            
 	            <ui.If rendered={this.state.showStageListing}>
@@ -100,13 +108,14 @@ var StageBlockContainer = React.createClass({
 	    		})}
 			</h3>
     	</div>
+    	
 		{ui.when(!wf.isParallelStage(this.props.stage), function() {
-			return <StageBlock stage={this.props.stage} />;
+			return <StageBlock stage={this.props.stage} workflow={this.props.workflow} />;
 		}.bind(this), function() {
 			return <ul className="list-unstyled">
 				{ui.map(this.props.stage.streams, function(subStage,i) {
 				return <li key={'stage-' + i}>
-					<StageBlock stage={subStage} />
+					<StageBlock stage={subStage} workflow={this.props.workflow} />
 				</li>;
 				})}
 			</ul>;

@@ -196,11 +196,9 @@ lib.ui.Popover = React.createClass({
 		if(!this.state.show) {
 			return null;
 		}
-		return <div className='j-ui-popover active'>
-			<div className={'j-ui-container ' + this.props.position}>
-	           {lib.ui.when(this.props.title, function() { return <h3>{this.props.title}</h3>; })}
-	           {this.props.children}
-	        </div>
+		return <div className={'j-ui-popover ' + this.props.position + (this.props.show ? ' active' : '')}>
+           {lib.ui.when(this.props.title, function() { return <h3>{this.props.title}</h3>; })}
+           {this.props.children}
         </div>;	
 	}
 });
@@ -264,7 +262,7 @@ lib.ui.Panel = React.createClass({
  */
 lib.ui.Actions = React.createClass({
 	render: function() {
-		return <div className="action-container">{this.props.children}</div>;
+		return <div className="actions">{this.props.children}</div>;
 	}
 });
 

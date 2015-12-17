@@ -5,7 +5,7 @@ var json = require('./model/stringify.js');
 
 var wfData = require('./model/json');
 
-var $el = $('.react-plugin-test');
+var $el = $('.react-pipeline-editor-plugin');
 if($el.length > 0) {
 	var props = {};
 	var $inputs = [];
