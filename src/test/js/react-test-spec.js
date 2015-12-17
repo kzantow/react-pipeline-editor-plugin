@@ -1,6 +1,6 @@
 var jsTest = require('jenkins-js-test');
 
-var jsLibName = "../ui/react-pipieline-editor-plugin.js";
+var jsLibName = "../ui/react-pipeline-editor-plugin.js";
 
 __REACT_DEVTOOLS_GLOBAL_HOOK__ = function() {
 	// This is to work around a global issue when require()-ing react...
