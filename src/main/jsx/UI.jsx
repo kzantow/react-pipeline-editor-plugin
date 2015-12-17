@@ -196,7 +196,7 @@ lib.ui.Popover = React.createClass({
 		if(!this.state.show) {
 			return null;
 		}
-		return <div className={'j-ui-popover ' + this.props.position + (this.props.show ? ' active' : '')}>
+		return <div className={'j-ui-popover ' + this.props.position + (this.state.show ? ' active' : '')}>
            {lib.ui.when(this.props.title, function() { return <h3>{this.props.title}</h3>; })}
            {this.props.children}
         </div>;	

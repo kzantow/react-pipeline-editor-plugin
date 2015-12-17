@@ -125,10 +125,14 @@ var StageBlockContainer = React.createClass({
 		<ui.Wrap>
 			<ui.Button onClick={this.showAddBranch} type={(this.state.showAddBranch ? 'primary active' : 'default')}><i className="fa fa-plus"></i> Add Parallel Branch</ui.Button>
 			<ui.Popover show={this.state.showAddBranch} onClose={this.hideAddBranch}>
-				<div className="input-group">
-					<f.TextInput ref="newBranchName" placeholder="New Parallel Branch Name" />
-					<ui.Button label="OK" onClick={this.addBranch}/>
-				</div>
+				<ui.Panel>
+					<f.Field label="Name">
+						<f.TextInput ref="newBranchName" placeholder="New Parallel Branch Name" />
+					</f.Field>
+					<ui.Actions>
+						<ui.Button type="primary" onClick={this.addBranch}>OK</ui.Button>
+					</ui.Actions>
+				</ui.Panel>
 			</ui.Popover>
 		</ui.Wrap>
 		</div>
@@ -154,7 +158,7 @@ var AddStageBlock = React.createClass({
 			</ui.Button>
 			<ui.Popover ref="addStage">
 				<f.TextInput ref="stageName" value={''} onEnter={this.addStage}/>
-				<ui.Button onClick={this.addStage}></ui.Button>
+				<ui.Button onClick={this.addStage}>OK</ui.Button>
 			</ui.Popover>
 		</div>
 	);}
@@ -300,6 +304,9 @@ lib.PipelineEditor = React.createClass({
 		this.forceUpdate();
 	},
 	componentWillMount: function() {
+		if(!this.props.workflow) { // nothing there, need a root object (this is an array... ugh)
+			this.props.workflow = [];
+		}
 		WorkflowStore.workflow = this.props.workflow;
 		console.log('loading workflow: ' + json.stringify(this.props.workflow));
 	},
@@ -315,7 +322,7 @@ lib.PipelineEditor = React.createClass({
 					}.bind(this))}
 					</div>
 					<AddStageBlock workflow={this.props.workflow} />
-					<f.TextArea value={wf.toWorkflow(this.props.workflow, WorkflowStore.getStepMap())}/>
+					<f.TextArea value={wf.toWorkflow(this.props.workflow, WorkflowStore.getStepMap())} expand={true} />
 				</div>
 			</div>
 		);

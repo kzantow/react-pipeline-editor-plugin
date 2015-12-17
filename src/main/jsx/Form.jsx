@@ -16,7 +16,7 @@ lib.form.Form = React.createClass({
 		type: React.PropTypes.oneOf(['vertical', 'horizontal'])
 	},
 	render: function() { return (
-		<div className={'form j-ui-form ' + this.props.type}>
+		<div className={'form j-ui-form ' + this.props.type + ui.choose(this.props.type, {horizontal: ' form-inline'})}>
     	{React.Children.map(this.props.children, function(child,i) {
 		    return <span key={i} className="form-group">
 		    	{child}
@@ -32,7 +32,7 @@ lib.form.Form = React.createClass({
  */
 lib.form.Field = React.createClass({
 	render: function() { return (
-		<div className="j-ui-field">
+		<div className="j-ui-field form-group">
 			<label>{this.props.label}</label>
 			<span className="j-ui-field-content">
     			{this.props.children}
@@ -160,6 +160,7 @@ lib.form.TextArea = React.createClass({
 		onChange: React.PropTypes.func,
 		value: React.PropTypes.string,
 		autoFocus: React.PropTypes.bool,
+		expand: React.PropTypes.bool,
 		link: React.PropTypes.array,
 		rows: React.PropTypes.number,
 		cols: React.PropTypes.number
@@ -173,7 +174,8 @@ lib.form.TextArea = React.createClass({
 
 	getInitialState: function() {
 		return {
-			value: this.props.value || ''
+			value: this.props.value || '',
+			rows: this.props.rows
 		};
 	},
 	
@@ -182,6 +184,14 @@ lib.form.TextArea = React.createClass({
 			return this.props.link[0][this.props.link[1]];
 		}
 		return this.state.value;
+	},
+	
+	getRows: function() {
+		if(this.props.expand) {
+			return this.val().split(/\n/).length + 1;
+		}
+		
+		return this.props.rows;
 	},
 
 	render: function() {
@@ -194,7 +204,7 @@ lib.form.TextArea = React.createClass({
 				onChange={this.handleChange}
 				value={this.val()}
 				autoFocus={this.props.autoFocus}
-				rows={this.props.rows}
+				rows={this.getRows()}
 				cols={this.props.cols}
 			/>
 		);
