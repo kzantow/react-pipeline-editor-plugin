@@ -1,14 +1,18 @@
-if(!lib.ui) lib.ui = {};
+if(!ui) ui = lib.ui = {};
 
-lib.ui.map = function(array, fn) {
+var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
+
+ui.Transition = ReactCSSTransitionGroup;
+
+ui.map = function(array, fn) {
 	return $.map(array, fn); // TODO what's the 'best' map function?
 };
 
-lib.ui.choose = function(val, options) {
+ui.choose = function(val, options) {
 	return options[val];
 };
 
-lib.ui.when = function(condition, fn, otherwise) {
+ui.when = function(condition, fn, otherwise) {
 	if(condition) {
 		return fn();
 	}
@@ -18,7 +22,7 @@ lib.ui.when = function(condition, fn, otherwise) {
 	return null;
 };
 
-lib.ui.isDescendant = function(parent, child) {
+ui.isDescendant = function(parent, child) {
     var node = child.parentNode;
     while(node !== null) {
         if(node === parent) {
@@ -29,19 +33,125 @@ lib.ui.isDescendant = function(parent, child) {
     return false;
 };
 
-lib.ui.eachProp = function(obj, handler) {
+ui.eachProp = function(obj, handler) {
 	for(var prop in obj) {
 		handler(prop);
 	}
 };
 
-lib.ui.Wrap = React.createClass({
+ui.isArray = function(o) {
+	return o && o.constructor === Array;
+};
+
+ui.isString = function(o) {
+	return o && (o instanceof String || typeof(o) === 'string');
+};
+
+ui.truncate = function(s, sz) {
+	return s.length > sz ? (s.substring(0,sz-3) + '...') : s;
+};
+
+/**
+ * Get children of a specific type
+ */
+ui.getChildrenOfType = function(children, type) {
+	var renderedChildren = null;
+	React.Children.forEach(children, function(child,i) {
+		if(!child) {
+			return;
+		}
+		if(child.type && child.type == type) {
+			if(!renderedChildren) {
+				renderedChildren = child;
+			}
+			else {
+				if(!(renderedChildren instanceof Array)) {
+					renderedChildren = [renderedChildren];
+				}
+				renderedChildren.push(child);
+			}
+		}
+	});
+	return renderedChildren;
+};
+
+
+/**
+ * Get children of a specific type
+ */
+ui.eachChildOfType = function(children, type, fn) {
+	var renderedChildren = null;
+	React.Children.forEach(children, function(child,i) {
+		if(!child) {
+			return;
+		}
+		if(child.type && child.type == type) {
+			if(!renderedChildren) {
+				renderedChildren = fn(child);
+			}
+			else {
+				if(!(renderedChildren instanceof Array)) {
+					renderedChildren = [renderedChildren];
+				}
+				renderedChildren.push(fn(child));
+			}
+		}
+	});
+	return renderedChildren;
+};
+
+/**
+ * Determines if the variable is 'empty'
+ */
+ui.isEmpty = function(val) {
+	if(debug) console.log('is empty ' + val);
+	return val === undefined || val === null || val === '';
+};
+
+/**
+ * Get children of a specific type
+ */
+ui.getChildrenExclduingType = function(children, type) {
+	var renderedChildren = null;
+	React.Children.forEach(children, function(child,i) {
+		if(!child) {
+			return;
+		}
+		if(child.type && child.type != type) {
+			if(!renderedChildren) {
+				renderedChildren = child;
+			}
+			else {
+				if(!(renderedChildren instanceof Array)) {
+					renderedChildren = [renderedChildren];
+				}
+				renderedChildren.push(child);
+			}
+		}
+	});
+	return renderedChildren;
+};
+
+/**
+ * Give the container a recommended width
+ */
+ui.Split = React.createClass({
+	render: function() {
+		return <div className="j-ui-split" style={this.props.style}>
+		{ui.map(this.props.children, function(child,i) {
+			return <span key={i}>{child}</span>;
+		})}
+		</div>;
+	}
+});
+
+ui.Wrap = React.createClass({
 	render: function() {
 		return <span className="j-ui-wrap">{this.props.children}</span>;
 	}
 });
 
-lib.ui.Button = React.createClass({
+ui.Button = React.createClass({
 	getDefaultProps: function() {
 		return {
 			type: 'default',
@@ -65,22 +175,22 @@ lib.ui.Button = React.createClass({
 	}
 });
 
-lib.ui.Icon = React.createClass({
+ui.Icon = React.createClass({
 	render: function() {
-		return <span className={'glyphicon glyphicon-' + this.props.type} aria-hidden="true"></span>;
+		return <span className={'glyphicon glyphicon-' + this.props.type} aria-hidden="true" style={this.props.style}></span>;
 	}
 });
 
-lib.ui.Tooltip = React.createClass({
+ui.Tooltip = React.createClass({
     componentDidMount: function() {
     	$(ReactDOM.findDOMNode(this)).tooltip();
     },
-	render: function() {
-		return <span className='tooltip' title={this.props.text}></span>;
-	}
+	render: function() { return (
+		<span className='tooltip' title={this.props.text}></span>
+	);}
 });
 
-lib.ui.Modal = React.createClass({
+ui.Modal = React.createClass({
 	getDefaultProps: function() {
 		return {
 			show: false
@@ -136,18 +246,19 @@ lib.ui.Modal = React.createClass({
     }
 });
 
-var forceUpdate = false;
-lib.ui.Popover = React.createClass({
+ui.Popover = React.createClass({
 	getDefaultProps: function() {
 		return {
 			show: false,
 			closeable: true,
-			position: 'bottom right'
+			position: 'bottom right',
+			type: ''
 		};
 	},
 	getInitialState: function() {
 		return {
-			show: this.props.show
+			show: this.props.show,
+			active: false
 		};
 	},
 	componentWillReceiveProps: function(props) {
@@ -157,37 +268,45 @@ lib.ui.Popover = React.createClass({
 	},
 	componentDidUpdate: function(prevProps, prevState) {
 	    if(this.props.closeable && this.state.show && this.state.show !== prevState.show) { // auto-bind close handlers for closeable popovers
-	    	var handler = function(e) {
-	    		if(lib.ui.isDescendant(ReactDOM.findDOMNode(this), e.target)) {
-	    			return; // don't close for events that originated in the popover
+	    	this.state.handler = function(e) {
+	    		try {
+		    		if(ui.isDescendant(ReactDOM.findDOMNode(this), e.target)) {
+		    			return; // don't close for events that originated in the popover
+		    		}
+	    		} catch(x) {
+	    			// ignore - e.g. DOM node was removed
 	    		}
+	    		
 	    		this.handleClose();
-	    		$(document).off('click', handler);
+	    		$(document).off('click', this.state.handler);
 	    	}.bind(this);
-	    	$(document).on('click', handler);
+	    	
+	    	$(document).on('click', this.state.handler);
 	    }
+	},
+	componentWillUnmount: function() {
+		this.setState({active: false});
+		if(debug) console.log('removing click handler for popover...');
+		$(document).off('click', this.state.handler);
+	},
+	componentDidMount: function() {
+//		setTimeout(function() {
+//			this.setState({active: true});
+//		}.bind(this), 1000);
 	},
 	show: function() {
 		this.setState({show: true});
-		if(forceUpdate) {
-			if(this.props.children) {
-				for(var i = 0; i < this.props.children.length; i++) {
-					if(this.props.children[i].forceUpdate) {
-						this.props.children[i].forceUpdate();
-					}
-				}
-			}
-			this.forceUpdate();
-		}
 	},
 	hide: function() {
 		this.setState({show: false});
-		if(forceUpdate) {
-			this.forceUpdate();
-		}
 	},
 	handleClose: function() {
-		this.setState({show: false});
+		if(this.isMounted()) {
+			this.setState({show: false});
+		}
+		else {
+			this.state.show = false; // ick
+		}
 		if(this.props.onClose) {
 			this.props.onClose();
 		}
@@ -196,14 +315,97 @@ lib.ui.Popover = React.createClass({
 		if(!this.state.show) {
 			return null;
 		}
-		return <div className={'j-ui-popover ' + this.props.position + (this.state.show ? ' active' : '')}>
-           {lib.ui.when(this.props.title, function() { return <h3>{this.props.title}</h3>; })}
-           {this.props.children}
-        </div>;	
+		return <ui.Transition transitionName="j-ui-popover" transitionEnterTimeout={1} transitionLeaveTimeout={1} transitionAppear={true} transitionAppearTimeout={1}>
+			<div className={'j-ui-popover active ' + this.props.position + ' ' + this.props.type + (this.state.active ? ' open' : '')}>
+	           {ui.when(this.props.title, function() { return <h3>{this.props.title}</h3>; })}
+	           {this.props.children}
+	        </div>
+        </ui.Transition>;	
 	}
 });
 
-lib.ui.If = React.createClass({
+/**
+ * 
+ */
+ui.PopoverButton = React.createClass({
+	propTyes: {
+		label: React.PropTypes.string.isRequired,
+		type: React.PropTypes.string,
+		onShow: React.PropTypes.func,
+		onHide: React.PropTypes.func
+	},
+	getDefaultProps: function() {
+		return {
+			position: 'bottom right',
+			type: 'default'
+		};
+	},
+	getInitialState: function() {
+		return {
+			show: this.props.show ? true : false
+		};
+	},
+	componentWillReceiveProps: function(props) {
+		if('show' in props && !ui.isArray(props.show) && props.show !== this.state.show) {
+    		this.setState({show: props.show});
+	    }
+	},
+	show: function(e) {
+		if(e) e.preventDefault();
+		
+		if(ui.isArray(this.props.show)) {
+			this.props.show[0][this.props.show[1]] = true;
+			this.forceUpdate();
+		}
+		else {
+			this.setState({show: true});
+		}
+		if(this.props.onShow) {
+			this.props.onShow();
+		}
+	},
+	hide: function(e) {
+		if(e) e.preventDefault();
+		
+		if(ui.isArray(this.props.show)) {
+			this.props.show[0][this.props.show[1]] = false;
+			this.forceUpdate();
+		}
+		else {
+			this.setState({show: false});
+		}
+		if(this.props.onHide) {
+			this.props.onHide();
+		}
+	},
+	isShown: function() {
+		if(ui.isArray(this.props.show)) {
+			return true === this.props.show[0][this.props.show[1]];
+		}
+		return this.state.show;
+	},
+	render: function() { return (
+		<span className="j-ui-wrap">
+			<button className={'btn btn-' + this.props.type + (this.isShown() ? ' active' : '')} onClick={this.show}>
+				{this.props.label}
+			</button>
+			<ui.Popover position={this.props.position} show={this.isShown()} onClose={this.hide}>
+				<ui.Panel>
+					{ui.getChildrenExclduingType(this.props.children, ui.Actions)}
+					<ui.Actions>
+		                <ui.Button type="link" onClick={this.hide}>Close</ui.Button>
+						{ui.eachChildOfType(this.props.children, ui.Actions, function(child) { return child.props.children; }.bind(this))}
+					</ui.Actions>
+				</ui.Panel>
+			</ui.Popover>
+		</span>
+	);}
+});
+
+/**
+ * Helper to conditionally render based on a condition
+ */
+ui.If = React.createClass({
 	getDefaultProps: function() {
 		return {
 			rendered: false
@@ -220,7 +422,7 @@ lib.ui.If = React.createClass({
     }
 });
 
-lib.ui.Horizontal = React.createClass({
+ui.Horizontal = React.createClass({
 	getDefaultProps: function() {
 		return {
 			width: null
@@ -231,7 +433,10 @@ lib.ui.Horizontal = React.createClass({
 	}
 });
 
-lib.ui.Panel = React.createClass({
+/**
+ * UI container, holds a spot for actions defined with <ui.Action> ...
+ */
+ui.Panel = React.createClass({
 	getDefaultProps: function() {
 		return {
 			width: null
@@ -244,13 +449,13 @@ lib.ui.Panel = React.createClass({
 			if(!child) {
 				return;
 			}
-			if(child.type && child.type == lib.ui.Actions) {
+			if(child.type && child.type == ui.Actions) {
 				actions = child;
 				return;
 			}
 			children.push(child);
 		});
-		return <div className="panel" style={{width: this.props.width ? this.props.width : ''}}>
+		return <div className="j-ui-panel" style={{width: this.props.width ? this.props.width : ''}}>
 			{children}
 			{actions}
 		</div>;
@@ -260,13 +465,16 @@ lib.ui.Panel = React.createClass({
 /**
  * A facet placeholder for action blocks
  */
-lib.ui.Actions = React.createClass({
+ui.Actions = React.createClass({
 	render: function() {
 		return <div className="actions">{this.props.children}</div>;
 	}
 });
 
-lib.ui.ActionMenu = React.createClass({
+/**
+ * A simple wrapper around another item which provides a drop-down arrow on hover
+ */
+ui.ActionMenu = React.createClass({
 	getDefaultProps: function() {
 		return {
 			width: null
@@ -290,12 +498,12 @@ lib.ui.ActionMenu = React.createClass({
 			if(!child) {
 				return;
 			}
-			if(child.type && child.type == lib.ui.Actions) {
+			if(child.type && child.type == ui.Actions) {
 				actions = <div className={'drop-down ' + (this.state.showActions ? ' active' : '')}>
 					<div className="toggle" onClick={this.onShowActions}>
 						<i className="fa fa-caret-down"></i>
 					</div>
-					<ui.Popover position="bottom left" show={this.state.showActions} onClose={this.onHideActions}>
+					<ui.Popover type="plain" position="bottom left" show={this.state.showActions} onClose={this.onHideActions}>
 						{child.props.children}
 					</ui.Popover>
 				</div>;

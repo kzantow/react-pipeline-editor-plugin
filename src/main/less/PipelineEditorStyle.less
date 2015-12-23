@@ -17,7 +17,48 @@
         right: 0;
         width: auto !important;
         height: 100% !important;
-    }        
+    }
+    
+    .stage-block {
+        position: relative;
+        
+        .open-stage-config {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+        }
+    }    
+    
+    .step-listing {
+        margin-top: 10px;
+        margin-bottom: 6px;
+        transition: max-height 0.75s;
+        
+        &.step-listing-active {
+            max-height: 20em;
+        }
+        
+        &.step-listing-appear {
+            overflow: hidden;
+            max-height: 0;
+        }
+        
+        button.list-group-item {
+            margin-top: 5px;
+        }
+    }
+    
+    .stage-listing {
+         margin-left: -20px;
+    }
+    
+    .stage-listing > div> div > .panel {
+            border: 0;
+    }
+
+    textarea.form-control {
+        height: auto;
+    }
 }
 
 // This will fix a problem with wrapping elements in bootstrap 
@@ -31,4 +72,6 @@
     margin-bottom: 6px !important;
 }
 
-
+.stage-listing .panel-heading, .stage-listing .panel-heading h3 {
+    margin-top: 0;
+}

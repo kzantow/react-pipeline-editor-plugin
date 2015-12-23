@@ -4,12 +4,21 @@ var json = require('./stringify.js');
  * remove the stage
  */
 exports.removeStage = function(workflow, stage) {
-	console.log('remove');
+	var idx = -1;
 	for (var i = 0; i < workflow.length; i++) {
 		var s = workflow[i];
-		console.log((s == stage) + json.stringify(s) + '==' + json.stringify(stage));
+		if(s === stage) {
+			idx = i;
+			console.log('removing idx: ' + idx);
+			break;
+		} else if(exports.isParallelStage) {
+			exports.removeStage(s.streams, stage);
+		}
+		console.log((s === stage) + json.stringify(s) + '==' + json.stringify(stage));
 	}
-	workflow.splice(workflow.indexOf(stage), 1);
+	if(idx >= 0) {
+		workflow.splice(idx, 1);
+	}
 };
 
 /**
@@ -57,13 +66,14 @@ exports.parallelToNormal = function(stage) {
  * streams. Use the name of the first steps as the stream name.
  */
 exports.makeParallel = function(stage) {
-	stage.streams = [];
+	var childStream = {
+		name : step.name,
+		steps : [ ]
+	};
+	stage.streams = [ childStream ];
 	for (var i = 0; i < stage.steps.length; i++) {
 		var step = stage.steps[i];
-		stage.streams.push({
-			name : step.name,
-			steps : [ step ]
-		});
+		childStream.steps.push(step);
 	}
 	delete stage.steps;
 };

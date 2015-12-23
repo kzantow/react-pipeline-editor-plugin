@@ -80,6 +80,18 @@
     &.bottom {
         top: 100%;
         margin-top: @separation-from-parent;
+        transition: margin-top .15s, opacity .05s;
+        margin-top: (@separation-from-parent);
+        opacity: 1;
+        
+        &.j-ui-popover {
+            &-appear {
+                opacity: 0;
+                margin-top: (@separation-from-parent - 6px);
+            }            
+            &-active {
+            }
+        }
         
         &:after {
             bottom: 100%;
@@ -105,25 +117,63 @@
         }
     }
     
+    // can get rid of the arrow
+    &.plain {
+        &:before, &:after {
+            display: none;
+        }
+    }
+    
     h3 {
         margin-top: 8px;
     }
     
-    .panel {
-        border: 0;
-        padding: 1em;
-        
-        .actions {
-            margin: 1em -1em -1.5em -1em;
-            text-align: right;
+    .j-ui-panel {
+        margin: 0;
+    }
+    
+    > .btn-link {
+        &:hover {
+            color: #ffffff;
+            background: #337ab7;
+            text-decoration: none;
+        }
+        &:first-child {
+            margin-top: 4px;
+        }
+        &:last-child {
+            margin-bottom: 4px;
         }
     }
 }
+        
+.j-ui-panel {
+    border: 0;
+    padding: 2em 2em;
+    margin: 1em 0;
+    
+    > .actions {
+        margin: 2em -2em -2em -2em;
+        text-align: right;
+        border-top: 1px solid #ddd;
+        padding: 1em;
+        background: #fafafa;
+        border-radius: 0 0 5px 5px;
+    }
+}
 
-.form-control {
-    textarea {
+textarea.form-control {
+    &[cols] {
+        width: auto;
+    }
+    
+    &[rows] {
         height: auto;
     }
+}
+
+input.form-control[size] {
+    width: auto;
 }
 
 // Breakpoints
@@ -165,17 +215,39 @@
     display: inline-block; // needs size
 }
 
+.j-ui-split {
+    @media @tablet {
+        display: table;
+        > span {
+            display: table-cell;
+            vertical-align: top;
+            
+            + span {
+                padding-left: 1em;
+            }
+        }
+    }
+}
+
 .action-menu {
     position: relative;
     
     > .drop-down {
         position: absolute;
-        top: 0;
+        top: 50%;
         right: 0;
         cursor: pointer;
+        margin-top: -10px;
 
         > .toggle {
             display: none;
+            color: #333;
+            width: 19px;
+            text-align: center;
+            padding: 1px 0 0 1px;
+            height: 19px;
+            font-size: 17px;
+            line-height: 18px;
         }
     }
     
@@ -183,5 +255,46 @@
         > .toggle {
             display: block;
         }
+    }
+    > .drop-down, > .drop-down.active {
+        &.active > .toggle , > .toggle:hover {
+            background: #333;
+            color: #fff;
+        }
+    }
+}
+
+.radio.radio {
+    > label {
+        padding: 0;
+        margin: 0;
+        
+        > * {
+            vertical-align: middle;
+        }
+        
+        > input[type=radio] {
+            margin: 0 10px 0 0;
+            padding: 0;
+            vertical-align: middle;
+            position: relative;
+        }
+    }
+}
+
+.fa-expand-arrow {
+    font-size: 18px;
+    vertical-align: middle;
+    width: 12px;
+    text-align: center;
+    transform: rotate(0deg);
+    transition: transform .15s;
+    
+    &:before {
+        content: "\f0da";
+    }
+    
+    &.active {
+        transform: rotate(90deg);
     }
 }

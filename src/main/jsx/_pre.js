@@ -1,14 +1,16 @@
 var React = require('react');
 var $ = require('bootstrap-detached').getBootstrap();
+var json = require('./model/stringify.js');
 
 // inspired by: http://simonsmith.io/writing-react-components-as-commonjs-modules/
-
 // and: https://facebook.github.io/react/docs/jsx-in-depth.html#namespaced-components
 
 var lib = exports;
 
 var ui = lib.ui = {}; // should be moved to 'component' or 'ui' namespace
 var f = lib.form = {};
+
+var debug = true;
 
 lib.plugins = [];
 
@@ -27,7 +29,7 @@ var unlisten = function(el, evt, cb) {
 	}
 };
 var trigger = function(el, evt, d, e) {
-	//console.log('trigger: ' + evt);
+	if(debug) console.log('trigger: ' + evt);
 	d = document;
 	if(d.createEvent) {
 		e = new Event(evt);
@@ -49,13 +51,13 @@ ui.Event = function(name) {
  */
 var isExcludedEventMethod = function(name, m) {
 	// https://facebook.github.io/react/docs/component-specs.html
-	return /render|getInitialState|setState|forceUpdate|replaceState|isMounted|setProps|replaceProps|getDOMNode|constructor|getDefaultProps|propTypes|mixins|statics|displayName|shouldComponentUpdate|component.*|on.*/.test(name);
+	return /render|getInitialState|setState|forceUpdate|replaceState|isMounted|setProps|replaceProps|getDOMNode|constructor|getDefaultProps|propTypes|mixins|statics|displayName|shouldComponentUpdate|component.*|on.*|val/.test(name);
 };
 
 var wrapWithEmitter = function(component, name, event, m) {
 	return function() {
 		try {
-			//console.log('invoke and send: ' + event + ' from: ' + name);
+			if(debug) console.log('invoke and send: ' + event + ' from: ' + name);
 			return m.apply(component, arguments);
 		} finally {
 			//trigger(ReactDOM.findDOMNode(component), event);
@@ -144,11 +146,36 @@ var wrap = function(context, name, fn, handler) {
 	};
 };
 
+var objDump = false ?
+	function(o) {
+		var output = [];
+		return json.stringify(o, function(key, value) {
+			if(output.indexOf(value) >= 0) {
+				return ' ** ';
+			}
+			output.push(value);
+			return value;
+		});
+	} :
+	function(o) {
+		return true ? '' : json.stringify(o, function(key, value) {
+			if(key in o) {
+				return value;
+			}
+			return ' ... ';
+		});
+	};
+
 var logFunction = function(invocation) {
-	var inst = invocation.context._reactInternalInstance;
-	var cmp = inst._currentElement.type.displayName;
-	var id = inst._rootNodeID;
-	console.log(cmp + '.' + invocation.name + ' @ ' + id);
+	var cmp, id;
+	try {
+		var inst = invocation.context._reactInternalInstance;
+		cmp = inst._currentElement.type.displayName;
+		id = inst._rootNodeID;
+	} catch(e) {
+		// ignore
+	}
+	if(debug) console.log(cmp + '.' + invocation.name + ' @ ' + id + '(' + objDump(invocation.arguments) + ')');
 	return invocation.proceed();
 };
 
@@ -166,7 +193,6 @@ ui.Logger = {
 	}
 };
 
-var debug = true;
 if(debug) {
 	var rcc = React.createClass;
 	React.createClass = function() {
