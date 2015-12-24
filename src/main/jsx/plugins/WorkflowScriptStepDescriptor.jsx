@@ -6,7 +6,7 @@ var wf = require('./WorkflowStore.js');
 wf.addStepType({
 	type: 'workflow',
 	name: 'Workflow Script',
-	icon: <i className="fa fa-code"></i>,
+	icon: <span style={{fontFamily: 'Impact', fontWeight: 100, fontSize: '13px'}}>WF</span>,
 	editor: React.createClass({
 		onChange: function() {
 			if(this.props.onChange) {

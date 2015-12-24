@@ -336,7 +336,7 @@ lib.form.RadioGroup = React.createClass({
     render: function() {
         var id = this._reactInternalInstance._rootNodeID; // TODO is this safe for now?
         
-        return <div>
+        return <div className={this.props.className}>
             {ui.when(this.props.nullText, function() {
                 return <div className="radio">
                     <label>
@@ -365,4 +365,92 @@ lib.form.RadioGroup = React.createClass({
             }.bind(this))}
         </div>;
     }
+});
+
+lib.form.InlineEdit = React.createClass({
+	getInitialState: function() {
+		return {
+			editing: false
+		};
+	},
+	edit: function() {
+		this.setState({editing: true});
+	},
+	cancel: function() {
+		if(this.props.onCancel) {
+			this.props.onCancel();
+		}
+		this.setState({editing: false});
+	},
+	save: function() {
+		if(this.props.onSave) {
+			this.props.onSave();
+		}
+		this.setState({editing: false});
+	},
+	componentWillUnmount: function() {
+		this.setState({editing: false});
+		if(debug) console.log('removing click handler for inline-edit...');
+		$('body').off('mousedown keyup', this.state.handler);
+	},
+	componentDidMount: function() {
+    	this.state.handler = function(e) {
+    		try {
+    			if(e.keyCode) {
+    				if(e.keyCode !== 27) {
+    					return;
+					}
+				} else if(ui.isDescendant(ReactDOM.findDOMNode(this), e.target)) {
+	    			return; // don't close for events that originated in this element
+	    		}
+    		} catch(x) {
+    			// ignore - e.g. DOM node was removed
+    		}
+    		
+    		if(this.state.editing) {
+	    		e.stopPropagation(); // don't close anything else
+	    		e.preventDefault();
+	    		
+	    		this.cancel();
+    		}
+    	}.bind(this);
+    	
+    	$('body').on('mousedown keyup', this.state.handler);
+	},
+	render: function() {
+		if(this.state.editing) {
+			return <span className="edit-field hovering edit">
+				{this.props.edit}
+				<span className="controls">
+					<ui.Button type="link btn-sm" onClick={this.cancel}><i className="fa fa-times"></i></ui.Button>
+					<ui.Button type="primary btn-sm" onClick={this.save}><i className="fa fa-check"></i></ui.Button>
+				</span>
+			</span>;
+		}
+		return <span className="edit-field view" onMouseDown={this.edit}>{this.props.view}</span>;
+	}
+});
+
+/**
+ * Offers a simple html contenteditable wrapper
+ */
+lib.form.ContentEditable = React.createClass({
+	componentDidMount: function() {
+		ReactDOM.findDOMNode(this).contentEditable = true;
+	},
+	val: function() {
+		return ReactDOM.findDOMNode(this).innerHTML;
+	},
+	handleChange: function() {
+		console.log('handle change from contentedtiable');
+		if(this.props.link) {
+			this.props.link[0][this.props.link[1]] = this.val();
+		}
+	},
+	render: function() {
+		if(this.props.link) {
+			return <span onKeyUp={this.handleChange} onMouseUp={this.handleChange}>{this.props.link[0][this.props.link[1]]}</span>;
+		}
+		return <span>{this.props.children}</span>;
+	}
 });

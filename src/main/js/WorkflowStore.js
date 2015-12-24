@@ -49,24 +49,44 @@ var WorkflowStore = new EventDispatcher({
 		this.workflow.push(stage);
 	},
 	
+	insertStage: function(insertBeforeStage, stage) {
+		var idx = -1;
+		for (var i = 0; i < this.workflow.length; i++) {
+			var s = this.workflow[i];
+			if(s === insertBeforeStage) {
+				idx = i;
+				break;
+			}
+		}
+		if(idx >= 0) {
+			this.workflow.splice(idx, 0, stage);
+		}
+		else {
+			this.addStage(stage);
+		}
+	},
+	
 	/**
 	 * remove the stage
 	 */
-	removeStage: function(workflow, stage) {
+	removeStage: function(stage, container) {
+		if(!container) {
+			container = this.workflow;
+		}
 		var idx = -1;
-		for (var i = 0; i < workflow.length; i++) {
-			var s = workflow[i];
+		for (var i = 0; i < container.length; i++) {
+			var s = container[i];
 			if(s === stage) {
 				idx = i;
 				console.log('removing idx: ' + idx);
 				break;
 			} else if(this.isParallelStage) {
-				this.removeStage(s.streams, stage);
+				this.removeStage(stage, s.streams);
 			}
 			console.log((s === stage) + json.stringify(s) + '==' + json.stringify(stage));
 		}
 		if(idx >= 0) {
-			workflow.splice(idx, 1);
+			container.splice(idx, 1);
 		}
 	},
 	
@@ -120,7 +140,7 @@ var WorkflowStore = new EventDispatcher({
 	 */
 	makeParallel: function(stage) {
 		var childStream = {
-			name : step.name,
+			name : stage.name,
 			steps : [ ]
 		};
 		stage.streams = [ childStream ];

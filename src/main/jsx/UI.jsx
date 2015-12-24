@@ -136,18 +136,44 @@ ui.getChildrenExclduingType = function(children, type) {
  * Give the container a recommended width
  */
 ui.Split = React.createClass({
+	collectChildren: function(children, key) {
+		var out = [];
+		for(var i = 0; i < children.length; i++) {
+			var child = children[i];
+			if(ui.isArray(child)) {
+				var grandChildren = this.collectChildren(child, key + i + '_');
+				for(var j = 0; j < grandChildren.length; j++) {
+					out.push(grandChildren[j]); // already wrapped in spans
+				}
+			}
+			else {
+				out.push(<span key={key + i}>{child}</span>);
+			}
+		}
+		return out;
+	},
 	render: function() {
-		return <div className="j-ui-split" style={this.props.style}>
-		{ui.map(this.props.children, function(child,i) {
-			return <span key={i}>{child}</span>;
-		})}
+		return <div className={'j-ui-split' + (this.props.align ? (' align-' + this.props.align) : '')} style={this.props.style}>
+		{this.collectChildren(this.props.children, '')}
 		</div>;
 	}
 });
 
+/**
+ * Used to wrap elements in an inline-block with position: relative
+ */
 ui.Wrap = React.createClass({
 	render: function() {
 		return <span className="j-ui-wrap">{this.props.children}</span>;
+	}
+});
+
+/**
+ * Used for a horizontal 'row' wrapper to apply consistent padding
+ */
+ui.Row = React.createClass({
+	render: function() {
+		return <div className="j-ui-row">{this.props.children}</div>;
 	}
 });
 
@@ -251,15 +277,26 @@ ui.Popover = React.createClass({
 		return {
 			show: false,
 			closeable: true,
-			position: 'bottom right',
 			type: ''
 		};
 	},
 	getInitialState: function() {
 		return {
 			show: this.props.show,
+			position: this.props.position ? this.props.position : 'bottom-right',
 			active: false
 		};
+	},
+	propTypes: {
+		show: React.PropTypes.bool,
+		closeable: React.PropTypes.bool,
+		fixed: React.PropTypes.bool,
+		type: React.PropTypes.string,
+		position: React.PropTypes.oneOf([
+            'bottom-left','bottom-center','bottom-right',
+            'top-left','top-center','top-right',
+            'right-top','right-middle','right-bottom',
+            'left-top','left-middle','left-bottom'])
 	},
 	componentWillReceiveProps: function(props) {
 	    if(props.show != this.state.show) {
@@ -267,32 +304,124 @@ ui.Popover = React.createClass({
 	    }
 	},
 	componentDidUpdate: function(prevProps, prevState) {
-	    if(this.props.closeable && this.state.show && this.state.show !== prevState.show) { // auto-bind close handlers for closeable popovers
-	    	this.state.handler = function(e) {
-	    		try {
-		    		if(ui.isDescendant(ReactDOM.findDOMNode(this), e.target)) {
-		    			return; // don't close for events that originated in the popover
-		    		}
-	    		} catch(x) {
-	    			// ignore - e.g. DOM node was removed
-	    		}
-	    		
-	    		this.handleClose();
-	    		$(document).off('click', this.state.handler);
-	    	}.bind(this);
-	    	
-	    	$(document).on('click', this.state.handler);
-	    }
+    	if(!prevState.show && this.state.show) { // if the drop-down was shown
+    		this.positionHandler();
+    	}
+	},
+	positionHandler: function(e) {
+		if(!this.state.show || this.props.fixed) {
+			return;
+		}
+
+		var $this = $(ReactDOM.findDOMNode(this));
+		$this = $this.find('.j-ui-popover'); // make sure this is right
+		var w = $this.width();
+		var h = $this.height();
+		var l = $this.offset().left;
+		var t = $this.offset().top;
+		
+		var $container = $this.offsetParent();
+		var cw = $container.width();
+		var ch = $container.height();
+		var cl = $container.offset().left;
+		var ct = $container.offset().top;
+		
+		var $win = $(window);
+		var $doc = $(document);
+		var dw = $win.width();
+		var dh = $win.height();
+		var dl = $doc.scrollLeft();
+		var dt = $doc.scrollTop();
+		
+		// offsets
+		var ot = 4;
+		var ol = 4;
+		var ob = -4;
+		var or = -4;
+		
+		var isTop = $this.is('.top');
+		var isLeft = $this.is('.left');
+		
+		var positions = [dw, dh, dl, dt, w, h, l, t, cw, ch, cl, ct];
+		
+		// Gather all the positions between:
+		// bottom-left
+		// bottom-center
+		// bottom-right
+		// top-left
+		// top-center
+		// top-right
+		// right-top
+		// right-middle
+		// right-bottom
+		// left-top
+		// left-middle
+		// left-bottom
+		
+		var multipliers = [
+		    
+            //bottom-left:
+        	[]
+        ];
+		
+		// FIXME need to get offset parent, margin to calculate where the popover would fall
+		// FIXME also need to default back to preferred position, if specified
+		
+		var offScreenRight = (l + w > dw + dl);
+		var offScreenLeft = (l < dl);
+		var offScreenBottom = (t + h > dh + dt);
+		var offScreenTop = (t < dt);
+		
+		if(offScreenRight && !isLeft && !offScreenLeft) {
+			this.setState({position: (isTop ? 'top' : 'bottom') + ' left'});
+		}
+		
+		if(offScreenBottom && !isTop && !offScreenTop) {
+			this.setState({position: 'top ' + (isLeft ? 'left' : 'right')});
+		}
+		
+		if(offScreenLeft && isLeft) {
+			this.setState({position: (isTop ? 'top' : 'bottom') + ' right'});
+		}
+		
+		if(offScreenTop && isTop) {
+			this.setState({position: 'bottom ' + (isLeft ? 'left' : 'right')});
+		}
+	},
+	closeHandler: function(e) {
+		if(!this.state.show) {
+			return;
+		}
+		try {
+			if(e.keyCode) {
+				if(e.keyCode !== 27) {
+					return;
+				}
+			} else if(ui.isDescendant(ReactDOM.findDOMNode(this), e.target)) {
+    			return; // don't close for events that originated in the popover
+    		}
+		} catch(x) {
+			// ignore - e.g. DOM node was removed
+		}
+		
+		this.handleClose();
+	},
+	componentDidMount: function() {
+		if(debug) console.log('adding handlers for popover...');
+    	$(document).
+    		on('click keyup', this.closeHandler).
+    		on('scroll resize', this.positionHandler);
+    	
+    	if(this.state.show) {
+    		this.positionHandler();
+    	}
 	},
 	componentWillUnmount: function() {
 		this.setState({active: false});
-		if(debug) console.log('removing click handler for popover...');
-		$(document).off('click', this.state.handler);
-	},
-	componentDidMount: function() {
-//		setTimeout(function() {
-//			this.setState({active: true});
-//		}.bind(this), 1000);
+		if(debug) console.log('removing handlers for popover...');
+		$(document).
+			off('click keyup', this.closeHandler).
+			off('scroll resize', this.positionHandler);
 	},
 	show: function() {
 		this.setState({show: true});
@@ -316,7 +445,7 @@ ui.Popover = React.createClass({
 			return null;
 		}
 		return <ui.Transition transitionName="j-ui-popover" transitionEnterTimeout={1} transitionLeaveTimeout={1} transitionAppear={true} transitionAppearTimeout={1}>
-			<div className={'j-ui-popover active ' + this.props.position + ' ' + this.props.type + (this.state.active ? ' open' : '')}>
+			<div className={'j-ui-popover active ' + this.state.position + ' ' + this.props.type + (this.state.active ? ' open' : '')}>
 	           {ui.when(this.props.title, function() { return <h3>{this.props.title}</h3>; })}
 	           {this.props.children}
 	        </div>
@@ -336,7 +465,7 @@ ui.PopoverButton = React.createClass({
 	},
 	getDefaultProps: function() {
 		return {
-			position: 'bottom right',
+			position: 'bottom-right',
 			type: 'default'
 		};
 	},
@@ -350,8 +479,19 @@ ui.PopoverButton = React.createClass({
     		this.setState({show: props.show});
 	    }
 	},
+	preShow: function(e) {
+		if(this.isShown()) {
+			this.state.isHiding = true;
+		}
+	},
 	show: function(e) {
-		if(e) e.preventDefault();
+		if(e) {
+			e.preventDefault();
+			if(this.state.isHiding) { // ick this is for handling clicking the button to close the popover
+				this.state.isHiding = false;
+				return;
+			}
+		}
 		
 		if(ui.isArray(this.props.show)) {
 			this.props.show[0][this.props.show[1]] = true;
@@ -365,15 +505,22 @@ ui.PopoverButton = React.createClass({
 		}
 	},
 	hide: function(e) {
-		if(e) e.preventDefault();
+		if(e) {
+			e.preventDefault();
+		}
 		
 		if(ui.isArray(this.props.show)) {
 			this.props.show[0][this.props.show[1]] = false;
-			this.forceUpdate();
+			if(this.isMounted()) {
+				this.forceUpdate();
+			}
 		}
 		else {
-			this.setState({show: false});
+			if(this.isMounted()) {
+				this.setState({show: false});
+			}
 		}
+		
 		if(this.props.onHide) {
 			this.props.onHide();
 		}
@@ -386,7 +533,7 @@ ui.PopoverButton = React.createClass({
 	},
 	render: function() { return (
 		<span className="j-ui-wrap">
-			<button className={'btn btn-' + this.props.type + (this.isShown() ? ' active' : '')} onClick={this.show}>
+			<button className={'btn btn-' + this.props.type + (this.isShown() ? ' active' : '')} onMouseDown={this.preShow} onClick={this.show}>
 				{this.props.label}
 			</button>
 			<ui.Popover position={this.props.position} show={this.isShown()} onClose={this.hide}>
@@ -503,7 +650,7 @@ ui.ActionMenu = React.createClass({
 					<div className="toggle" onClick={this.onShowActions}>
 						<i className="fa fa-caret-down"></i>
 					</div>
-					<ui.Popover type="plain" position="bottom left" show={this.state.showActions} onClose={this.onHideActions}>
+					<ui.Popover type="plain" position="bottom-left" fixed={true} show={this.state.showActions} onClose={this.onHideActions}>
 						{child.props.children}
 					</ui.Popover>
 				</div>;

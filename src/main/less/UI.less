@@ -132,7 +132,7 @@
         margin: 0;
     }
     
-    > .btn-link {
+    > .btn-link, > .j-ui-wrap > .btn-link {
         &:hover {
             color: #ffffff;
             background: #337ab7;
@@ -215,9 +215,21 @@ input.form-control[size] {
     display: inline-block; // needs size
 }
 
+.j-ui-row {
+    position: relative;
+    display: block; // needs size
+    margin: 1em 0;
+}
+
 .j-ui-split {
     @media @tablet {
         display: table;
+        width: 100%;
+        
+        &.shrink {
+            width: auto;
+        }
+        
         > span {
             display: table-cell;
             vertical-align: top;
@@ -225,6 +237,10 @@ input.form-control[size] {
             + span {
                 padding-left: 1em;
             }
+        }
+        
+        &.align-middle > span {
+            vertical-align: middle;
         }
     }
 }
@@ -244,10 +260,11 @@ input.form-control[size] {
             color: #333;
             width: 19px;
             text-align: center;
-            padding: 1px 0 0 1px;
+            padding: 1px 0 0 0px;
             height: 19px;
-            font-size: 17px;
+            font-size: 18px;
             line-height: 18px;
+            border-radius: 2px;
         }
     }
     
@@ -296,5 +313,113 @@ input.form-control[size] {
     
     &.active {
         transform: rotate(90deg);
+    }
+}
+button > .fa-expand-arrow {
+    margin-left: -8px;
+    margin-right: 12px;
+}
+
+.edit-field {
+    position: relative;
+    display: inline-block;
+    
+    &.view {
+        padding: .3em .5em;
+        white-space: nowrap;
+        
+        &:hover {
+            box-shadow: 0 0 4px #aaa;
+            border-radius: 5px;
+        }
+    }
+    
+    &.edit {
+        > .form-control, > span[contenteditable] {
+            font-size: inherit;
+            color: inherit;
+            padding: .3em .5em;
+        }
+        
+        > span[contenteditable] {
+            box-shadow: 0 0 4px #aaa;
+            border-radius: 5px;
+        }
+    }
+    
+    .controls {
+        position: absolute;
+        right: 3px;
+        top: 100%;
+        margin-top: -1px;
+        background: #fff;
+        padding: 4px;
+        border: 1px solid #ccc;
+        border-radius: 0 0 5px 5px;
+        box-shadow: 0 3px 5px -2px #aaa;
+        white-space: nowrap;
+        
+        button:last-child {
+            margin-left: 4px;
+        }
+    }
+    
+    &.hovering .controls {
+        margin-top: -3px;
+        border-radius: 5px;
+    }
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.wrap {
+    white-space: initial;
+}
+
+.btn {
+    &.md {
+        padding: 5px 10px;
+        font-size: 12px;
+        line-height: 1.5;
+        border-radius: 3px;
+    }
+    
+    &.xs {
+        //padding: 1px 5px;
+        //font-size: 12px;
+        //line-height: 1.5;
+        //border-radius: 3px;
+        font-size: 11px;
+        line-height: 24px;
+        border-radius: 3px;
+        width: 25px;
+        height: 24px;
+        text-align: center;
+        padding: 0 1px;
+    }
+    
+    &.btn-danger.outline, &.danger.outline, &.btn-danger-outline {
+        background: #fff;
+        color: #d43f3a;
+        border-color: #d43f3a;
+        
+        &:hover, &:focus, &:active {
+            background: #d43f3a;
+            color: #fff;
+        }
+    }
+    
+    &.btn-primary.outline, &.primary.outline, &.btn-primary-outline {
+        background: #fff;
+        color: #2e6da4;
+        border-color: #2e6da4;
+        
+        &:hover, &:focus, &:active {
+            background: #337ab7;
+            border-color: #2e6da4;
+            color: #fff;
+        }
     }
 }

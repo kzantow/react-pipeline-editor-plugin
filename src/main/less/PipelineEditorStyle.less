@@ -1,4 +1,13 @@
 .pipeline-editor {
+    .pipeline-visual-editor {
+        margin-top: 20px;
+        margin-left: -20px;
+        
+        > div {
+            margin-bottom: 20px;
+        }
+    }
+    
     .modal-dialog {
         top: 0;
         bottom: 0;
@@ -32,32 +41,107 @@
     .step-listing {
         margin-top: 10px;
         margin-bottom: 6px;
-        transition: max-height 0.75s;
+        transition: max-height 4s, max-width 4s;
+        
+        & {
+            background: #fff;
+            padding: 6px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            box-shadow: inset 2px 2px 5px -3px #ccc;
+        }
         
         &.step-listing-active {
-            max-height: 20em;
+            max-height: 200px;
+            max-width: 500px;
         }
         
         &.step-listing-appear {
             overflow: hidden;
-            max-height: 0;
+            max-height: 50px;
+            max-width: 100px;
         }
         
         button.list-group-item {
             margin-top: 5px;
         }
+        
+        .step {
+            position: relative;
+            
+            > div {
+                padding: 8px;
+                cursor: pointer;
+            }
+            
+            + .step {
+                border-top: 1px dotted #eee;
+            }
+            
+            &:hover > div, &.active > div {
+                //background: #f5f5f5;
+                background: #555;
+                color: #fff;
+                border-radius: 2px;                
+            }
+        }
+    
+        > .j-ui-wrap {
+            margin-top: 4px;
+            
+            .btn.xs {
+                margin: 1px 4px 4px 4px;
+            }
+        }
     }
     
     .stage-listing {
-         margin-left: -20px;
-    }
-    
-    .stage-listing > div> div > .panel {
-            border: 0;
+        .stage {
+            display: inline-block;
+            vertical-align: top;
+            margin-right: 20px;
+            min-width: 200px;
+            
+            &:last-child {
+                margin-right: 0;
+            }
+            
+            > .panel {
+                border: 0;
+            }
+        }
+        
+        // each stage container:
+        .j-ui-split > span {
+            padding-left: 42px;
+            min-height: 100%;
+            min-width: 200px;
+        }
     }
 
     textarea.form-control {
         height: auto;
+    }
+    
+    .step-icon {
+        display: inline-block;
+        width: 25px;
+        height: 25px;
+        vertical-align: middle;
+        background: #fff;
+        text-align: center;
+        line-height: 24px;
+        color: #555;
+        font-size: 14px;
+        border-radius: 3px;
+        margin: -4px 4px -4px -4px;
+        overflow: hidden;
+        border: 1px solid #555;
+        
+        &.float-right {
+            margin: -4px -3px -4px -4px;
+            float: right;
+        }
     }
 }
 

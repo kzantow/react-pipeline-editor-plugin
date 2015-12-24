@@ -8,7 +8,6 @@ wf.addStepType({
 	name: 'Git',
 	icon: <i className="fa fa-code-fork"></i>,
 	editor: React.createClass({
-		mixins: [ui.Emit('WorkflowUpdate')],
 		updateValue: function(event, old, newVal) {
 			//this.props.data.url = newVal; // TODO validate
 			this.forceUpdate();
@@ -19,7 +18,7 @@ wf.addStepType({
 		render: function() {
 			return <ui.Split>
 				<f.Field label="Command">
-					<f.RadioGroup link={[this.props.data,'command']} onChange={this.updateValue}>
+					<f.RadioGroup link={[this.props.data,'command']} onChange={this.updateValue} className="nowrap">
 					{ui.map(['clone','checkout','stash','stash pop','push'], function(command, i) {
 						return <f.Item value={command}>{command}</f.Item>;
 					})}
@@ -27,16 +26,22 @@ wf.addStepType({
 				</f.Field>
 				{ui.choose(this.props.data.command, {
 					clone: <f.Field label="Git URL">
-							<f.TextInput link={[this.props.data,'url']} size={22}/>
+							<f.TextInput link={[this.props.data,'url']} onChange={this.updateValue} size={22}/>
 						</f.Field>,
 					checkout: <f.Field label="Branch Name">
-							<f.TextInput link={[this.props.data,'branch']} size={22}/>
+							<f.TextInput link={[this.props.data,'branch']} onChange={this.updateValue} size={22}/>
 						</f.Field>
 				})}
 			</ui.Split>;
 		}
 	}),
 	isValid: function(data) {
+		switch(data.command) {
+		case 'clone':
+			return !ui.isEmpty(data.url);
+		case 'checkout':
+			return !ui.isEmpty(data.branch);
+		}
 		return this.generateScript(data).length > 'git '.length;
 	},
 	generateScript: function(data) {
@@ -46,9 +51,11 @@ wf.addStepType({
 			cmd = ' \'' + data.url + '\'';
 			break;
 		case 'checkout':
-			cmd = data.branch;
+			cmd = 'checkout ' + data.branch;
 			break;
+		default:
+			cmd = data.command;
 		}
-		return 'git ' + data.command + cmd;
+		return 'git ' + cmd;
 	}
 });
