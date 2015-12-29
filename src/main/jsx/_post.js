@@ -12,7 +12,12 @@ if($el.length > 0) {
 	while($next.is('input')) {
 		var name = $next.attr('name').replace(/\_\./,'');
 //		try {
-			data[name] = $next.val() !== '' ? JSON.parse($next.val().replace(/\&quot\;/g,'"')) : null;
+			if($next.is('.json')) {
+				data[name] = $next.val() !== '' ? JSON.parse($next.val().replace(/\&quot\;/g,'"')) : null;
+			}
+			else {
+				data[name] = $next.val();
+			}
 //		} catch(e) {
 //			data[name] = {};
 //		}
@@ -30,8 +35,15 @@ if($el.length > 0) {
 	$el.parents('form').on('submit', function() {
 		for(var i = 0; i < $inputs.length; i++) {
 			var field = $inputs[i];
-			if(debug) console.log('setting: ' + field.name + ' to: ' + json.stringify(data[field.name]));
-			field.$el.val(json.stringify(data[field.name]));
+			var val;
+			if(field.$el.is('.json')) {
+				val = json.stringify(data[field.name]);
+			}
+			else {
+				val = data[field.name];
+			}
+			if(debug) console.log('setting: ' + field.name + ' to: ' + val);
+			field.$el.val(val);
 		}
 	});
 }

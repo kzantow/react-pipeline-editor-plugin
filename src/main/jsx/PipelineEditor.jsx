@@ -11,7 +11,10 @@ window.connect = function() {
 	
 	var connections = [];
 	$('.stage').each(function() {
-		connections.push([$(this).find('.connect-between')[0]]);
+		// when connecting multiple, insert middle connection point
+		if(connections.length > 0 && connections[connections.length-1].length > 1) {
+			connections.push([$(this).find('.connect-between')[0]]);
+		}
 		
 		var blocks = [];
 		connections.push(blocks);
@@ -20,7 +23,7 @@ window.connect = function() {
 		});
 	});
 	
-	for(var i = 2; i < connections.length; i++) {
+	for(var i = 1; i < connections.length; i++) {
 		var prev = connections[i-1];
 		var curr = connections[i];
 		

@@ -5,6 +5,6 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"/>
     <div class="react-pipeline-editor-plugin"></div>
     <input type="hidden" name="_.script" value="${instance.script}"/>
-    <input type="hidden" name="_.pipelineModel" value="${instance.pipelineModel}"/>
+    <input type="hidden" name="_.pipelineModel" class="json" value="${instance.pipelineModel}"/>
   </f:block>  
 </j:jelly>
