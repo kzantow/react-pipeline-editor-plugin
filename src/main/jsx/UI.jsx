@@ -681,6 +681,9 @@ ui.ActionMenu = React.createClass({
 	onHideActions: function() {
 		this.setState({showActions: false});
 	},
+	hide: function() {
+		this.onHideActions();
+	},
 	render: function() {
 		var actions = null;
 		var renderedChildren = [];

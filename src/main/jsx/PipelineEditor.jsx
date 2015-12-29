@@ -11,14 +11,15 @@ window.connect = function() {
 	
 	var connections = [];
 	$('.stage').each(function() {
+		var $stages = $(this).find('.stage-block');
 		// when connecting multiple, insert middle connection point
-		if(connections.length > 0 && connections[connections.length-1].length > 1) {
+		if(connections.length > 0 && connections[connections.length-1].length > 1 && $stages.length > 1) {
 			connections.push([$(this).find('.connect-between')[0]]);
 		}
 		
 		var blocks = [];
 		connections.push(blocks);
-		$(this).find('.stage-block').each(function() {
+		$stages.each(function() {
 			blocks.push(this);
 		});
 	});
@@ -71,16 +72,19 @@ var StageBlock = React.createClass({
     componentDidMount: function() {
     	this.componentDidUpdate();
     },
+    hideRenameStage: function() {
+    	this.refs.actions.hide();
+    },
     render: function() { return (
         <div className="panel panel-default stage-block">
             <div className="panel-heading">
-                <ui.ActionMenu>
+                <ui.ActionMenu ref="actions">
                     <ui.Button type="link" onClick={this.toggleStageListing}>
                     	<i className={'fa fa-expand-arrow ' + (this.state.showStageListing ? 'active' : '')}></i>
                         {this.props.stage.name}
                     </ui.Button>
                     <ui.Actions>
-                        <ui.PopoverButton ref="renameStage" type="link" label="Rename">
+                        <ui.PopoverButton ref="renameStage" type="link" label="Rename" onHide={this.hideRenameStage}>
                             <f.Field label="Name">
                                 <f.TextInput link={[this.props.stage,'name']} size={22} />
                             </f.Field>
@@ -221,8 +225,8 @@ var StepDetailButton = React.createClass({
         wf.removeStep(this.props.stage, this.props.step);
     	this.setState({showEditor: false});
     },
-    showEditor: function() {
-    	this.setState({showEditor: true});
+    toggleEditor: function() {
+    	this.setState({showEditor: !this.state.showEditor});
     },
     hideEditor: function() {
     	this.setState({showEditor: false});
@@ -231,7 +235,7 @@ var StepDetailButton = React.createClass({
         var stepType = wf.getStepMap()[this.props.step.type];
         var stepName = this.props.step.name ? this.props.step.name : ui.truncate(stepType.generateScript(this.props.step), 30);
         return (
-		<div className={'step' + (this.state.showEditor ? ' active' : '')} onClick={this.showEditor}>
+		<div className={'step' + (this.state.showEditor ? ' active' : '')} onClick={this.toggleEditor}>
 			<div><span className="step-icon">{stepType.icon}</span> {stepName}</div>
 	        <ui.Popover show={this.state.showEditor} onClose={this.hideEditor} ref="step" position="bottom-right">
 	        	<ui.Panel>
@@ -251,7 +255,10 @@ var StepDetailButton = React.createClass({
 		        	<ui.Row>
 			        	<ui.Button type="danger-outline" onClick={this.removeStep}><i className="fa fa-times"></i> Remove</ui.Button>
 			        </ui.Row>
-		            <ui.Actions><ui.Button type="primary" onClick={this.saveStep}>OK</ui.Button></ui.Actions>
+		            <ui.Actions>
+	            		<ui.Button type="link" onClick={this.hideEditor}>Close</ui.Button>
+		            	<ui.Button type="primary" onClick={this.saveStep}>OK</ui.Button>
+	            	</ui.Actions>
 		        </ui.Panel>
 	        </ui.Popover>
 	    </div>

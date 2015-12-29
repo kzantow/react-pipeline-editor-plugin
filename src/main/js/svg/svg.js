@@ -57,13 +57,15 @@ exports.on = function(el1, el2){
       // console.log("low to high");        
       svgheight = Math.round((el1pos.top+el1H/2) - (el2pos.top+el2H/2));
       svgtop = Math.round(el2pos.top + el2H/2) - settings.strokeWidth;        
-      cpt = svgwidth * 0.25;//Math.round(svgwidth*Math.min(svgheight/300, 1));
+      cpt = svgwidth * 0.25;
+      cpt = Math.round(svgwidth*Math.min(svgheight/300, 1));
       p = "M0,"+ (svgheight+settings.strokeWidth) +" C"+cpt+","+(svgheight+settings.strokeWidth)+" "+(svgwidth-cpt)+"," + settings.strokeWidth + " "+svgwidth+"," + settings.strokeWidth;          
     }else{
       // console.log("high to low");
       svgheight = Math.round((el2pos.top+el2H/2) - (el1pos.top+el1H/2));
       svgtop = Math.round(el1pos.top + el1H/2) - settings.strokeWidth;  
-      cpt = svgheight * 0.25;//Math.round(svgwidth*Math.min(svgheight/300, 1));
+      cpt = svgheight * 0.25;
+      cpt = Math.round(svgwidth*Math.min(svgheight/300, 1));
       p = "M0," + settings.strokeWidth + " C"+ cpt +",0 "+ (svgwidth-cpt) +","+(svgheight+settings.strokeWidth)+" "+svgwidth+","+(svgheight+settings.strokeWidth);                  
     }
     
