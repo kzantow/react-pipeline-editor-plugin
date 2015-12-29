@@ -41,7 +41,6 @@
     .step-listing {
         margin-top: 10px;
         margin-bottom: 6px;
-        transition: max-height 4s, max-width 4s;
         
         & {
             background: #fff;
@@ -51,15 +50,18 @@
             box-shadow: inset 2px 2px 5px -3px #ccc;
         }
         
-        &.step-listing-active {
-            max-height: 200px;
-            max-width: 500px;
-        }
-        
         &.step-listing-appear {
             overflow: hidden;
-            max-height: 50px;
-            max-width: 100px;
+            max-height: 1px;
+            max-width: 200px;
+            padding: 0px 6px;
+        }
+        
+        &.step-listing-appear-active {
+            transition: max-height .25s, max-width .25s, padding .25s;
+            max-height: 400px;
+            max-width: 400px;
+            padding: 6px;
         }
         
         button.list-group-item {
@@ -72,6 +74,9 @@
             > div {
                 padding: 8px;
                 cursor: pointer;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             
             + .step {
@@ -97,6 +102,7 @@
     
     .stage-listing {
         .stage {
+            position: relative;
             display: inline-block;
             vertical-align: top;
             margin-right: 20px;
@@ -109,10 +115,25 @@
             > .panel {
                 border: 0;
             }
+            
+            .insert-stage {
+                position: absolute;
+                right: 100%;
+                top: 50%;
+                margin: -10px 10px 0 0;
+            }
+            
+            .connect-between {
+                width: 1px;
+                height: 1px;
+                position: absolute;
+                left: -44px;
+                top: 50%;
+            }
         }
         
         // each stage container:
-        .j-ui-split > span {
+        > .j-ui-split > span {
             padding-left: 42px;
             min-height: 100%;
             min-width: 200px;

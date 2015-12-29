@@ -147,16 +147,7 @@ var wrap = function(context, name, fn, handler) {
 };
 
 var objDump = false ?
-	function(o) {
-		var output = [];
-		return json.stringify(o, function(key, value) {
-			if(output.indexOf(value) >= 0) {
-				return ' ** ';
-			}
-			output.push(value);
-			return value;
-		});
-	} :
+	ui.stringify :
 	function(o) {
 		return true ? '' : json.stringify(o, function(key, value) {
 			if(key in o) {

@@ -68,7 +68,7 @@ exports.on = function(el1, el2){
     }
     
     //ugly one-liner
-    var $ropebag = $('#ropebag').length ? $('#ropebag') : $('body').append($( "<div id='ropebag' />" )).find('#ropebag');
+    var $ropebag = $('#ropebag').length ? $('#ropebag') : $('body').prepend($( "<div id='ropebag' />" )).find('#ropebag');
 
     var svgnode = document.createElementNS('http://www.w3.org/2000/svg','svg');
     var newpath = document.createElementNS('http://www.w3.org/2000/svg',"path");

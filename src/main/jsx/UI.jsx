@@ -2,7 +2,7 @@ if(!ui) ui = lib.ui = {};
 
 var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
 
-ui.Transition = ReactCSSTransitionGroup;
+ui.ClassTransition = ReactCSSTransitionGroup;
 
 ui.map = function(array, fn) {
 	return $.map(array, fn); // TODO what's the 'best' map function?
@@ -49,6 +49,22 @@ ui.isString = function(o) {
 
 ui.truncate = function(s, sz) {
 	return s.length > sz ? (s.substring(0,sz-3) + '...') : s;
+};
+
+/**
+ * JSON.stringify, short-circuit on circular references
+ */
+ui.stringify = function(o) {
+	var output = [];
+	return json.stringify(o, function(key, value) {
+		if(value instanceof Object) {
+			if(output.indexOf(value) >= 0) {
+				return ' ** ';
+			}
+			output.push(value);
+		}
+		return value;
+	});
 };
 
 /**
@@ -301,7 +317,13 @@ ui.Popover = React.createClass({
 	componentWillReceiveProps: function(props) {
 	    if(props.show != this.state.show) {
 	    	this.setState({show: props.show});
+	    	this.positionHandler();
 	    }
+	},
+	componentWillUpdate: function(nextProps, nextState) {
+    	if(!this.state.show && nextState.show) { // if the drop-down is shown
+    		this.positionHandler();
+    	}
 	},
 	componentDidUpdate: function(prevProps, prevState) {
     	if(!prevState.show && this.state.show) { // if the drop-down was shown
@@ -310,6 +332,9 @@ ui.Popover = React.createClass({
 	},
 	positionHandler: function(e) {
 		if(!this.state.show || this.props.fixed) {
+			if(this.state.show && !this.state.active) {
+				this.setState({active: true});
+			}
 			return;
 		}
 
@@ -325,68 +350,85 @@ ui.Popover = React.createClass({
 		var ch = $container.height();
 		var cl = $container.offset().left;
 		var ct = $container.offset().top;
+		var cr = cl + cw;
+		var cb = ct + ch;
+		
+		// offsets from container - needs to match the css, maybe calc this?
+		var insetT = 4; // inset to the container
+		var insetR = 4;
+		var insetB = 4;
+		var insetL = 4;
+		var offsetT = 10; // offset from the container
+		var offsetR = 10;
+		var offsetB = 10;
+		var offsetL = 10;
+		
+		// Gather all the positions between:
+		
+		var vl = cr + offsetR - w;
+		var vr = cl - offsetL + w;
+		var vt = ct + insetT - h;
+		var vb = cb - insetB + h;
+		
+		var hl = cl + insetL - w;
+		var hr = cr - insetR + w;
+		var ht = cb + offsetB - h;
+		var hb = ct - offsetT + h;
 		
 		var $win = $(window);
 		var $doc = $(document);
-		var dw = $win.width();
-		var dh = $win.height();
-		var dl = $doc.scrollLeft();
-		var dt = $doc.scrollTop();
+		var winW = $win.width();
+		var winH = $win.height();
+		var winL = $doc.scrollLeft();
+		var winT = $doc.scrollTop();
+		var winR = winL + winW;
+		var winB = winT + winH;
 		
-		// offsets
-		var ot = 4;
-		var ol = 4;
-		var ob = -4;
-		var or = -4;
+		var canFit = {
+			'bottom-left': vl > winL && vb < winB,
+			'bottom-center': 0,
+			'bottom-right': vr < winR && vb < winB,
+			'top-left': vl > winL && vt > winT,
+			'top-center': 0,
+			'top-right': vr < winR && vt > winT,
+			'right-top': hr < winR && ht > winT,
+			'right-middle': 0,
+			'right-bottom': hr < winR && hb < winB,
+			'left-top': hl > winL && ht > winT,
+			'left-middle': 0,
+			'left-bottom': hl > winL && hb < winB
+		};
 		
-		var isTop = $this.is('.top');
-		var isLeft = $this.is('.left');
+		var isOver = {
+			top: t < winT,
+			bottom: t+h > winB,
+			left: l < winL,
+			right: l+w > winR
+		};
 		
-		var positions = [dw, dh, dl, dt, w, h, l, t, cw, ch, cl, ct];
-		
-		// Gather all the positions between:
-		// bottom-left
-		// bottom-center
-		// bottom-right
-		// top-left
-		// top-center
-		// top-right
-		// right-top
-		// right-middle
-		// right-bottom
-		// left-top
-		// left-middle
-		// left-bottom
-		
-		var multipliers = [
-		    
-            //bottom-left:
-        	[]
-        ];
-		
-		// FIXME need to get offset parent, margin to calculate where the popover would fall
-		// FIXME also need to default back to preferred position, if specified
-		
-		var offScreenRight = (l + w > dw + dl);
-		var offScreenLeft = (l < dl);
-		var offScreenBottom = (t + h > dh + dt);
-		var offScreenTop = (t < dt);
-		
-		if(offScreenRight && !isLeft && !offScreenLeft) {
-			this.setState({position: (isTop ? 'top' : 'bottom') + ' left'});
+		// not on screen
+		// can fit another position?
+		var preferred = this.props.position && canFit[this.props.position] ? this.props.position : this.state.position;
+		if(!canFit[preferred]) {
+			if(isOver.top) {
+				preferred = preferred.replace('top','bottom');
+			}
+			if(isOver.right) {
+				preferred = preferred.replace('right','left');
+			}
+			if(isOver.bottom) {
+				preferred = preferred.replace('bottom','top');
+			}
+			if(isOver.left) {
+				preferred = preferred.replace('left','right');
+			}
 		}
 		
-		if(offScreenBottom && !isTop && !offScreenTop) {
-			this.setState({position: 'top ' + (isLeft ? 'left' : 'right')});
+		if(preferred != this.state.position && canFit[preferred]) {
+			this.setState({position: preferred});
 		}
 		
-		if(offScreenLeft && isLeft) {
-			this.setState({position: (isTop ? 'top' : 'bottom') + ' right'});
-		}
-		
-		if(offScreenTop && isTop) {
-			this.setState({position: 'bottom ' + (isLeft ? 'left' : 'right')});
-		}
+		this.setState({active: true});
 	},
 	closeHandler: function(e) {
 		if(!this.state.show) {
@@ -432,6 +474,7 @@ ui.Popover = React.createClass({
 	handleClose: function() {
 		if(this.isMounted()) {
 			this.setState({show: false});
+			this.replaceState(this.getInitialState()); // reset state
 		}
 		else {
 			this.state.show = false; // ick
@@ -444,12 +487,12 @@ ui.Popover = React.createClass({
 		if(!this.state.show) {
 			return null;
 		}
-		return <ui.Transition transitionName="j-ui-popover" transitionEnterTimeout={1} transitionLeaveTimeout={1} transitionAppear={true} transitionAppearTimeout={1}>
-			<div className={'j-ui-popover active ' + this.state.position + ' ' + this.props.type + (this.state.active ? ' open' : '')}>
+		return <ui.ClassTransition transitionName="j-ui-popover" transitionEnterTimeout={0} transitionLeaveTimeout={0} transitionAppear={true} transitionAppearTimeout={500}>
+			<div key="pop" className={'j-ui-popover active ' + this.state.position + ' ' + this.props.type}>
 	           {ui.when(this.props.title, function() { return <h3>{this.props.title}</h3>; })}
 	           {this.props.children}
 	        </div>
-        </ui.Transition>;	
+        </ui.ClassTransition>;	
 	}
 });
 

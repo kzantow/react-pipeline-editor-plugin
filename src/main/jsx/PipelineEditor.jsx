@@ -1,8 +1,40 @@
-var lines = require('./svg/lines');
+var lines = require('./svg/svg');
 var wf = require('./WorkflowStore.js');
 
+window.disconnect = function() {
+	lines.off();
+};
+
+window.connect = function() {
+	lines.init({strokeWidth: 2});
+	lines.set('strokeColor', '#999');
+	
+	var connections = [];
+	$('.stage').each(function() {
+		connections.push([$(this).find('.connect-between')[0]]);
+		
+		var blocks = [];
+		connections.push(blocks);
+		$(this).find('.stage-block').each(function() {
+			blocks.push(this);
+		});
+	});
+	
+	for(var i = 2; i < connections.length; i++) {
+		var prev = connections[i-1];
+		var curr = connections[i];
+		
+		for(var p = 0; p < prev.length; p++) {
+			lines.on(prev[p], curr[0]);
+		}
+		
+		for(var n = 1; n < curr.length; n++) {
+			lines.on(prev[0], curr[n]);
+		}
+	}
+};
+
 var StageBlock = React.createClass({
-    //mixins: [ui.Emit('WorkflowUpdate')],
     getInitialState: function() {
         return {
             showStageListing: false
@@ -19,6 +51,22 @@ var StageBlock = React.createClass({
     },
     renameStage: function() {
         this.refs.renameStage.hide();
+    },
+    componentWillUpdate: function(nextProps, nextState) {
+    	if(this.state.showStageListing != nextState.showStageListing) {
+    		window.disconnect();
+    	}
+    },
+    componentDidUpdate: function(prevProps, prevState) {
+    	// FIXME this is not great
+    	if(!prevState || this.state.showStageListing != prevState.showStageListing) {
+    		setTimeout(function() { // wait for the show animation
+		        window.connect();
+    		}, 500);
+    	}
+    },
+    componentDidMount: function() {
+    	this.componentDidUpdate();
     },
     render: function() { return (
         <div className="panel panel-default stage-block">
@@ -80,14 +128,16 @@ var StageBlockContainer = React.createClass({
     removeStage: function() {
          wf.removeStage(this.props.stage);
     },
-    addBranchDisabled: function() {
-    	return !ui.isEmpty(this.refs.newBranchName);
+    handleBranchName: function() {
+    	this.setState({showAddBranch: true, addBranchDisabled: ui.isEmpty(this.refs.newBranchName)});
     },
     render: function() { return (
-        <div className="stage" style={{position:'relative'}}>
-        	<div style={{position:'absolute',right:'100%',top:'50%',margin:'-10px 10px 0 0'}}>
+        <div className="stage">
+        	<div className="insert-stage">
     			<AddStageBlock type="primary outline xs" stage={this.props.stage} />
         	</div>
+    			
+			<div className="connect-between"></div>
         	
             <div className="panel">
                 {ui.when(!wf.isParallelStage(this.props.stage), function() {
@@ -105,10 +155,10 @@ var StageBlockContainer = React.createClass({
             
             <ui.PopoverButton type="primary outline" show={this.state.showAddBranch} onClose={this.hideAddBranch} label={<span><i className="fa fa-plus"></i> Parallel</span>}>
                 <f.Field label="Name">
-                    <f.TextInput ref="newBranchName" placeholder="Branch Name" autoFocus={true} size={22} onChange={this.forceUpdate.bind(this)} />
+                    <f.TextInput ref="newBranchName" placeholder="Branch Name" autoFocus={true} size={22} onChange={this.handleBranchName} />
                 </f.Field>
                 <ui.Actions>
-                    <ui.Button type="primary" disabled={this.addBranchDisabled()} onClick={this.addBranch}>OK</ui.Button>
+                    <ui.Button type="primary" disabled={this.state.addBranchDisabled} onClick={this.addBranch}>OK</ui.Button>
                 </ui.Actions>
             </ui.PopoverButton>
         </div>
@@ -246,7 +296,7 @@ var StepList = React.createClass({
         });
     },
     render: function() { return (
-	    <ui.Transition transitionName="step-listing" transitionEnterTimeout={100} transitionLeaveTimeout={1} transitionAppear={true} transitionAppearTimeout={1}>
+	    <ui.ClassTransition transitionName="step-listing" transitionEnterTimeout={0} transitionLeaveTimeout={0} transitionAppear={true} transitionAppearTimeout={500}>
 	        <div className="list-group step-listing">
 	            {ui.map(this.props.stage.steps, function(step,i) {
 	                return <StepDetailButton key={i} stage={this.props.stage} step={step} />;
@@ -275,7 +325,7 @@ var StepList = React.createClass({
 	                </ui.Actions>
 	            </ui.PopoverButton>
 	        </div>
-	    </ui.Transition>
+	    </ui.ClassTransition>
     );}
 });
 

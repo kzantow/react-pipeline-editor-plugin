@@ -29,7 +29,7 @@
         border-right: 9px solid transparent;
     }
     
-    &.top {
+    &.top-right, &.top-left {
         &:before {
             top: 100%;
             margin-top: 1px;
@@ -37,7 +37,7 @@
         }
     }
     
-    &.bottom {
+    &.bottom-right, &.bottom-left {
         &:before {
             bottom: 100%;
             margin-bottom: 1px;
@@ -45,13 +45,13 @@
         }
     }
     
-    &.left {
+    &.top-left, &.bottom-left {
         &:before {
             right: (@arrow-pad - 1);
         }
     }
     
-    &.right {
+    &.top-right, &.bottom-right {
         &:before {
             left: (@arrow-pad - 1);
         }
@@ -67,9 +67,20 @@
         border-right: 8px solid transparent;
     }
     
-    &.top {
+    &.top-right, &.top-left {
         bottom: 100%;
         margin-bottom: @separation-from-parent;
+        
+        &.j-ui-popover-appear {
+            opacity: 0;
+            margin-top: (@separation-from-parent - 6px);
+            
+            &-active {
+                transition: margin-bottom .15s, opacity .05s;
+                margin-bottom: (@separation-from-parent);
+                opacity: 1;
+            }
+        }
         
         &:after {
             top: 100%;
@@ -77,19 +88,18 @@
         }
     }
     
-    &.bottom {
+    &.bottom-right, &.bottom-left {
         top: 100%;
-        margin-top: @separation-from-parent;
-        transition: margin-top .15s, opacity .05s;
         margin-top: (@separation-from-parent);
-        opacity: 1;
         
-        &.j-ui-popover {
-            &-appear {
-                opacity: 0;
-                margin-top: (@separation-from-parent - 6px);
-            }            
+        &.j-ui-popover-appear {
+            opacity: 0;
+            margin-top: (@separation-from-parent - 6px);
+            
             &-active {
+                transition: margin-top .15s, opacity .05s;
+                margin-top: (@separation-from-parent);
+                opacity: 1;
             }
         }
         
@@ -99,7 +109,7 @@
         }
     }
     
-    &.left {
+    &.top-left, &.bottom-left {
         right: 0;
         margin-right: -@offset-from-parent;
         
@@ -108,7 +118,7 @@
         }
     }
     
-    &.right {
+    &.top-right, &.bottom-right {
         left: 0;
         margin-left: -@offset-from-parent;
         
