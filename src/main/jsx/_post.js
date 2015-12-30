@@ -32,7 +32,9 @@ if($el.length > 0) {
 	var component = React.createElement(type, {data: data});
 	ReactDOM.render(component, $el[0]);
 	
-	$el.parents('form').on('submit', function() {
+	var wf = require('./WorkflowStore.js');
+
+	wf.addListener(function() {
 		for(var i = 0; i < $inputs.length; i++) {
 			var field = $inputs[i];
 			var val;

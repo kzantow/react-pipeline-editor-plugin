@@ -29,7 +29,12 @@ exports.set = function(prop, val){
   settings[prop] = val;
 };
 
-exports.on = function(el1, el2){
+exports.on = function(parent, el1, el2){
+    var $parent = $(parent);
+    var $container = $('.connector-img').length ? $('.connector-img') : $parent.prepend($( "<div class='connector-img' />" )).find('.connector-img');
+    $container.css({left: 0, top: 0, position: 'absolute', right: 0, bottom: 0 });
+
+    
   var $el1 = $(el1);
   var $el2 = $(el2);
   if ($el1.length && $el2.length) {
@@ -38,9 +43,16 @@ exports.on = function(el1, el2){
         svgleft,
         svgtop,
         svgwidth;
-
+    
+    var parentOffset = $parent.offset();
+    
     var el1pos = $(el1).offset();
+    el1pos.left -= parentOffset.left;
+    el1pos.top -= parentOffset.top;
+    
     var el2pos = $(el2).offset();
+    el2pos.left -= parentOffset.left;
+    el2pos.top -= parentOffset.top;
 
     var el1H = $(el1).outerHeight();
     var el1W = $(el1).outerWidth();
@@ -57,21 +69,18 @@ exports.on = function(el1, el2){
       // console.log("low to high");        
       svgheight = Math.round((el1pos.top+el1H/2) - (el2pos.top+el2H/2));
       svgtop = Math.round(el2pos.top + el2H/2) - settings.strokeWidth;        
-      cpt = svgwidth * 0.25;
-      cpt = Math.round(svgwidth*Math.min(svgheight/300, 1));
+      cpt = svgwidth * (Math.log(svgheight));
+      cpt = Math.round(svgwidth*Math.min(svgheight/50, 1));
       p = "M0,"+ (svgheight+settings.strokeWidth) +" C"+cpt+","+(svgheight+settings.strokeWidth)+" "+(svgwidth-cpt)+"," + settings.strokeWidth + " "+svgwidth+"," + settings.strokeWidth;          
     }else{
       // console.log("high to low");
       svgheight = Math.round((el2pos.top+el2H/2) - (el1pos.top+el1H/2));
       svgtop = Math.round(el1pos.top + el1H/2) - settings.strokeWidth;  
-      cpt = svgheight * 0.25;
-      cpt = Math.round(svgwidth*Math.min(svgheight/300, 1));
+      cpt = svgwidth * (Math.log(svgheight));
+      cpt = Math.round(svgwidth*Math.min(svgheight/50, 1));
       p = "M0," + settings.strokeWidth + " C"+ cpt +",0 "+ (svgwidth-cpt) +","+(svgheight+settings.strokeWidth)+" "+svgwidth+","+(svgheight+settings.strokeWidth);                  
     }
     
-    //ugly one-liner
-    var $ropebag = $('#ropebag').length ? $('#ropebag') : $('body').prepend($( "<div id='ropebag' />" )).find('#ropebag');
-
     var svgnode = document.createElementNS('http://www.w3.org/2000/svg','svg');
     var newpath = document.createElementNS('http://www.w3.org/2000/svg',"path");
     newpath.setAttributeNS(null, "d", p);
@@ -82,7 +91,7 @@ exports.on = function(el1, el2){
     svgnode.appendChild(newpath);
     //for some reason, adding a min-height to the svg div makes the lines appear more correctly.
     $(svgnode).css({left: svgleft, top: svgtop, position: 'absolute',width: svgwidth, height: svgheight + settings.strokeWidth*2, minHeight: '20px' });
-    $ropebag.append(svgnode);
+    $container.append(svgnode);
     if (settings.animate) {
       // THANKS to http://jakearchibald.com/2013/animated-line-drawing-svg/
       var pl = newpath.getTotalLength();
@@ -107,5 +116,5 @@ exports.on = function(el1, el2){
 };
 
 exports.off = function(){
-  $("#ropebag").empty();
+  $(".connector-img").empty();
 };

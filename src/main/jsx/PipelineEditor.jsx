@@ -9,6 +9,8 @@ window.connect = function() {
 	lines.init({strokeWidth: 2});
 	lines.set('strokeColor', '#999');
 	
+	var parent = $('.pipeline-visual-editor')[0];
+	
 	var connections = [];
 	$('.stage').each(function() {
 		var $stages = $(this).find('.stage-block');
@@ -29,11 +31,11 @@ window.connect = function() {
 		var curr = connections[i];
 		
 		for(var p = 0; p < prev.length; p++) {
-			lines.on(prev[p], curr[0]);
+			lines.on(parent, prev[p], curr[0]);
 		}
 		
 		for(var n = 1; n < curr.length; n++) {
-			lines.on(prev[0], curr[n]);
+			lines.on(parent, prev[0], curr[n]);
 		}
 	}
 };
@@ -343,7 +345,12 @@ var StepList = React.createClass({
  * The pipeline editor itself
  */
 lib.PipelineEditor = React.createClass({
-    render: function() { return (
+	mixins: [ wf.mixin('update') ],
+ 	update: function() {
+		window.disconnect();
+		window.connect();
+ 	},
+ 	render: function() { return (
         <div className='pipeline-visual-editor'>
             <div className="stage-listing">
             	<ui.Split>

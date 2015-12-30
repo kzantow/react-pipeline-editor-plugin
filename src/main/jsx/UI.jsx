@@ -243,6 +243,17 @@ ui.Modal = React.createClass({
 			show: this.props.show
 		};
 	},
+	componentWillReceiveProps: function(newProps) {
+		if(newProps.show != this.state.show) {
+			this.setState({show: newProps.show});
+		}
+	},
+    componentDidUpdate: function(prevProps, prevState) {
+    	if(!prevState.show && this.state.show) {
+	        $(this.refs.modal).modal('show');
+	        $(this.refs.modal).on('hidden.bs.modal', this.onClose);
+    	}
+    },
     componentDidMount: function() {
         $(this.refs.modal).modal('show');
         $(this.refs.modal).on('hidden.bs.modal', this.onClose);
