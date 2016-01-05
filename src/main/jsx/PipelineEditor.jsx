@@ -1,3 +1,7 @@
+/* FIXME:
+* This file should be splited. Rule of thumb is to have a file for each
+* React component.
+*/
 var lines = require('./svg/svg');
 var wf = require('./WorkflowStore.js');
 
@@ -8,9 +12,9 @@ window.disconnect = function() {
 window.connect = function() {
 	lines.init({strokeWidth: 2});
 	lines.set('strokeColor', '#999');
-	
+
 	var parent = $('.pipeline-visual-editor')[0];
-	
+
 	var connections = [];
 	$('.stage').each(function() {
 		var $stages = $(this).find('.stage-block');
@@ -18,22 +22,22 @@ window.connect = function() {
 		if(connections.length > 0 && connections[connections.length-1].length > 1 && $stages.length > 1) {
 			connections.push([$(this).find('.connect-between')[0]]);
 		}
-		
+
 		var blocks = [];
 		connections.push(blocks);
 		$stages.each(function() {
 			blocks.push(this);
 		});
 	});
-	
+
 	for(var i = 1; i < connections.length; i++) {
 		var prev = connections[i-1];
 		var curr = connections[i];
-		
+
 		for(var p = 0; p < prev.length; p++) {
 			lines.on(parent, prev[p], curr[0]);
 		}
-		
+
 		for(var n = 1; n < curr.length; n++) {
 			lines.on(parent, prev[0], curr[n]);
 		}
@@ -97,7 +101,7 @@ var StageBlock = React.createClass({
                         <ui.Button type="link" onClick={this.removeStage}>Remove</ui.Button>
                     </ui.Actions>
                 </ui.ActionMenu>
-                
+
                 <ui.If rendered={this.state.showStageListing}>
                     <StepList stage={this.props.stage} />
                 </ui.If>
@@ -128,7 +132,7 @@ var StageBlockContainer = React.createClass({
             name: this.refs.newBranchName.val(),
             steps: []
         });
-        
+
         this.setState({showAddBranch: false});
     },
     toggleParallel: function() {
@@ -145,9 +149,9 @@ var StageBlockContainer = React.createClass({
         	<div className="insert-stage">
     			<AddStageBlock type="primary outline xs" stage={this.props.stage} />
         	</div>
-    			
+
 			<div className="connect-between"></div>
-        	
+
             <div className="panel">
                 {ui.when(!wf.isParallelStage(this.props.stage), function() {
                     return <StageBlock stage={this.props.stage} workflow={this.props.workflow} />;
@@ -161,7 +165,7 @@ var StageBlockContainer = React.createClass({
                     </ul>;
                 }.bind(this))}
             </div>
-            
+
             <ui.PopoverButton type="primary outline" show={this.state.showAddBranch} onClose={this.hideAddBranch} label={<span><i className="fa fa-plus"></i> Parallel</span>}>
                 <f.Field label="Name">
                     <f.TextInput ref="newBranchName" placeholder="Branch Name" autoFocus={true} size={22} onChange={this.handleBranchName} />
@@ -302,7 +306,7 @@ var StepList = React.createClass({
     },
     onStepTypeSelected: function(stepType) {
         console.log('stepType set: ' + json.stringify(stepType));
-        
+
         this.setState({
             stepData: {type: stepType}
         });
@@ -313,11 +317,11 @@ var StepList = React.createClass({
 	            {ui.map(this.props.stage.steps, function(step,i) {
 	                return <StepDetailButton key={i} stage={this.props.stage} step={step} />;
 	            }.bind(this))}
-	            
+
 	            <ui.PopoverButton ref="addStepContainer" onClose={this.onAddStepClose} type="primary xs" label={<span><ui.Icon type="plus"/></span>}>
 	                <ui.Split>
 	                    <div className="nowrap">
-	                        <f.TextInput ref="stepName" onChange={this.onStepChange} onEnter={this.addStep} 
+	                        <f.TextInput ref="stepName" onChange={this.onStepChange} onEnter={this.addStep}
 	                        	placeholder={wf.isValidStep(this.state.stepData) ? wf.generateScript(this.state.stepData) : 'Step Name'}
 	                        	size={22}/>
 	                        <f.RadioGroup onChange={this.onStepTypeSelected}>
@@ -360,7 +364,7 @@ lib.PipelineEditor = React.createClass({
                 <AddStageBlock type="primary outline" label=" Add Stage"/>
                 </ui.Split>
             </div>
-        
+
             <div>
                 <pre>{wf.toWorkflow(this.props.workflow)}</pre>
             </div>
