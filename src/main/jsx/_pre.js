@@ -75,7 +75,7 @@ ui.Emit = function(event, methodNames) {
 			if(methodNames) {
 				for(var i = 0; i < methodNames.length; i++) {
 					var mName = methodNames[i];
-					this[mName] = wrapWithEmitter(this, name, event, this[mName]);
+					this[mName] = wrapWithEmitter(this, mName, event, this[mName]);
 				}
 			} else {
 				for(var name in this) {
