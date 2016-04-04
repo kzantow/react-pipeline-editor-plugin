@@ -1,13 +1,16 @@
 var React = require('react');
+var ReactDOM = require('react-dom');
+var ReactCSSTransitionGroup = require('react-addons-css-transition-group');
+var ui = require('jenkins-react-components')(React, ReactDOM, ReactCSSTransitionGroup);
+
 var $ = require('bootstrap-detached').getBootstrap();
-var json = require('./model/stringify.js');
+var stringify = require('prototype-stringify-hack');
 
 // inspired by: http://simonsmith.io/writing-react-components-as-commonjs-modules/
 // and: https://facebook.github.io/react/docs/jsx-in-depth.html#namespaced-components
 
 var lib = exports;
 
-var ui = lib.ui = {}; // should be moved to 'component' or 'ui' namespace
 var f = lib.form = {};
 
 var debug = true;
@@ -149,7 +152,7 @@ var wrap = function(context, name, fn, handler) {
 var objDump = false ?
 	ui.stringify :
 	function(o) {
-		return true ? '' : json.stringify(o, function(key, value) {
+		return true ? '' : stringify(o, function(key, value) {
 			if(key in o) {
 				return value;
 			}

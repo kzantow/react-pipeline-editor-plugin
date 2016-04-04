@@ -1,4 +1,4 @@
-var json = require('./model/stringify.js');
+var stringify = require('prototype-stringify-hack');
 var EventDispatcher = require('./EventDispatcher.js');
 
 var WorkflowStore = new EventDispatcher({
@@ -80,10 +80,10 @@ var WorkflowStore = new EventDispatcher({
 				idx = i;
 				console.log('removing idx: ' + idx);
 				break;
-			} else if(this.isParallelStage) {
+			} else if(this.isParallelStage(s)) {
 				this.removeStage(stage, s.streams);
 			}
-			console.log((s === stage) + json.stringify(s) + '==' + json.stringify(stage));
+			console.log((s === stage) + stringify(s) + '==' + stringify(stage));
 		}
 		if(idx >= 0) {
 			container.splice(idx, 1);
@@ -99,6 +99,10 @@ var WorkflowStore = new EventDispatcher({
 	 */
 	removeStep: function(stage, step) {
 		stage.steps.splice(stage.steps.indexOf(step), 1);
+	},
+	
+	updateStep: function(step) {
+		// nothing really to do
 	},
 	
 	/**
@@ -185,7 +189,9 @@ var WorkflowStore = new EventDispatcher({
 			for (var i = 0; i < stepData.length; i++) {
 				var stepInfo = stepData[i];
 				var mod = modules[stepInfo.type];
-				steps += "\n        " + mod.generateScript(stepInfo);
+				if (mod) {
+					steps += "\n        " + mod.generateScript(stepInfo);
+				}
 			}
 			return steps;
 		};

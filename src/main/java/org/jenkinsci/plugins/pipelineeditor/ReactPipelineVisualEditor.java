@@ -23,11 +23,11 @@ public class ReactPipelineVisualEditor extends CpsFlowDefinition {
         return pipelineModel;
     }
 
-    @Extension
+    @Extension(ordinal=0.000001)
     public static class DescriptorImpl extends CpsFlowDefinition.DescriptorImpl {
         @Override
         public String getDisplayName() {
-            return "React Pipeline Visual Editor";
+            return "Visual Editor (Experimental React-based editor)";
         }
     }
 }

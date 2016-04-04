@@ -6,7 +6,7 @@ var wf = require('./WorkflowStore.js');
 lib.PipelineEditorDialog = React.createClass({
 	mixins: [ wf.mixin('update') ],
  	update: function() {
-		console.log('wf update: ' + json.stringify(wf.getWorkflow()) + ' => ' + wf.toWorkflow(wf.getWorkflow()));
+		console.log('wf update: ' + stringify(wf.getWorkflow()) + ' => ' + wf.toWorkflow(wf.getWorkflow()));
 		this.props.data.pipelineModel = wf.getWorkflow();
 		this.props.data.script = wf.toWorkflow(this.props.data.pipelineModel);
 		this.forceUpdate();
@@ -41,7 +41,7 @@ lib.PipelineEditorDialog = React.createClass({
 lib.PipelineEditorInline = React.createClass({
 	mixins: [ wf.mixin('update') ],
  	update: function() {
-		console.log('wf update: ' + json.stringify(wf.getWorkflow()) + ' => ' + wf.toWorkflow(wf.getWorkflow()));
+		console.log('wf update: ' + stringify(wf.getWorkflow()) + ' => ' + wf.toWorkflow(wf.getWorkflow()));
 		this.props.data.pipelineModel = wf.getWorkflow();
 		this.props.data.script = wf.toWorkflow(this.props.data.pipelineModel);
 		this.forceUpdate();

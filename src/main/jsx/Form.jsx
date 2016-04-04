@@ -72,7 +72,7 @@ lib.form.Input = React.createClass({
 /**
  * TextInput should be used for any type of text input, it will provide 
  */
-lib.form.TextInput = React.createClass({
+var basicInput = {
     propTypes: {
         className: React.PropTypes.string,
         id: React.PropTypes.string,
@@ -80,13 +80,18 @@ lib.form.TextInput = React.createClass({
         onChange: React.PropTypes.func,
         value: React.PropTypes.string,
         size: React.PropTypes.number,
+        min: React.PropTypes.number,
+        max: React.PropTypes.number,
+        step: React.PropTypes.number,
         autoFocus: React.PropTypes.bool,
-        link: React.PropTypes.array
+        link: React.PropTypes.array,
+        type: React.PropTypes.string
     },
     
     getDefaultProps: function() {
         return {
-            className: 'form-control'
+            className: 'form-control',
+            type: 'text'
         };
     },
 
@@ -104,7 +109,11 @@ lib.form.TextInput = React.createClass({
     
     render: function() { return (
         <input
+            type={this.props.type}
             className={this.props.className}
+            min={this.props.min}
+            max={this.props.max}
+            step={this.props.step}
             id={this.props.id}
             placeholder={this.props.placeholder}
             onBlur={this.handleChange}
@@ -163,9 +172,37 @@ lib.form.TextInput = React.createClass({
             $(ReactDOM.findDOMNode(this)).focus();
         }
     }
+};
 
-});
+lib.form.TextInput = React.createClass(basicInput);
 
+lib.form.IntegerInput = React.createClass($.extend(basicInput, {
+    getDefaultProps: function() {
+        return {
+            className: 'form-control',
+            type: 'number',
+            step: 1
+        };
+    },
+}));
+
+lib.form.DecimalInput = React.createClass($.extend(basicInput, {
+    getDefaultProps: function() {
+        return {
+            className: 'form-control',
+            type: 'number'
+        };
+    },
+}));
+
+lib.form.Checkbox = React.createClass($.extend(basicInput, {
+    getDefaultProps: function() {
+        return {
+            className: 'form-control',
+            type: 'checkbox'
+        };
+    }
+}));
 
 /**
  * TextInput should be used for any type of text input, it will provide 

@@ -2,3 +2,5 @@
 /target/
 /.classpath
 /.project
+/node/
+/node_modules/

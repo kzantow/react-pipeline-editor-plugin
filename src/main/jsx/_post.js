@@ -1,7 +1,6 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 var $ = require('bootstrap-detached').getBootstrap();
-var json = require('./model/stringify.js');
 
 var $el = $('.react-pipeline-editor-plugin');
 if($el.length > 0) {
@@ -39,7 +38,7 @@ if($el.length > 0) {
 			var field = $inputs[i];
 			var val;
 			if(field.$el.is('.json')) {
-				val = json.stringify(data[field.name]);
+				val = stringify(data[field.name]);
 			}
 			else {
 				val = data[field.name];

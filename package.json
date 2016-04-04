@@ -1,4 +1,30 @@
 {
-  "dependencies": {
-  }
+    "name": "react-pipeline-editor-plugin",
+    "version": "0.2.0",
+    "description": "",
+    "author": "",
+    "license": "",
+    
+    "devDependencies": {
+        "jenkins-react-js-builder": "0.0.1",
+        "node-inspector": "latest"
+    },
+    
+    "dependencies": {
+        "bootstrap-detached": "^3.3.4-v6",
+        "jenkins-js-modules": "^1.4.0",
+        "moment": "^2.10.6",
+        "window-handle": "0.0.6",
+        "react": "^0.14.6",
+        "react-dom": "^0.14.6",
+        "react-addons-css-transition-group": "^0.14.6",
+        "jenkins-react-components": "0.0.3",
+        "prototype-stringify-hack": "latest"
+    },
+    
+    "scripts": {
+         "test": "jenkins-react-js-builder test",
+         "watch": "jenkins-react-js-builder watch",
+         "bundle": "jenkins-react-js-builder local-bundle"
+    }
 }
